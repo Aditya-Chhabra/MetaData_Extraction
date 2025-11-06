@@ -1,147 +1,222 @@
-# PDF Metadata Extraction using T5 Model
+# PDF Metadata Extraction using OpenAI GPT-4o-mini
 
-An AI-powered tool that automatically extracts structured metadata from PDF documents using Google's T5 (Text-to-Text Transfer Transformer) language model.
+An AI-powered tool that automatically extracts structured metadata from PDF documents using OpenAI's GPT-4o-mini model with advanced prompt engineering techniques.
 
 ## Overview
 
-This project leverages the T5-large model to intelligently analyze and extract metadata from various document types including legal contracts, research papers, judgments, articles, reports, and general documents. The extracted metadata is returned in a structured JSON format.
+This project leverages OpenAI's GPT-4o-mini API to intelligently analyze and extract metadata from various document types including research papers, legal contracts, conference papers, articles, reports, judgments, and general documents. The extracted metadata is returned in a structured JSON format with guaranteed valid JSON output.
 
 ## Features
 
-- **Intelligent Metadata Extraction**: Automatically identifies and extracts relevant metadata from document content
-- **Multiple Document Type Support**: Works with legal contracts, research papers, judgments, articles, reports, and more
-- **Comprehensive Metadata**: Extracts various metadata including:
+- **Advanced Prompt Engineering**: Comprehensive prompt design with clear instructions and examples
+- **Multiple Document Type Support**: Works with research papers, legal contracts, conference papers, judgments, articles, reports, and more
+- **Comprehensive Metadata Extraction**: Automatically extracts:
   - Document type classification
-  - Key entities (people, companies, organizations, locations)
-  - Important dates (creation, publication, expiration dates)
-  - Document structure (titles, chapters, clauses, sections)
-  - References (laws, regulations, academic citations, case law)
-  - Document summary or abstract
-- **JSON Output**: Structured metadata output in JSON format for easy integration
-- **Google Colab Support**: Designed to run seamlessly in Google Colab environment
-- **Downloadable Results**: Automatically saves and downloads extracted metadata
+  - Authors and parties involved
+  - Titles and key topics
+  - Publication/creation/judgment dates
+  - Locations and jurisdictions
+  - Journal names, DOI, ISBN, volume, issue
+  - Key sections and structural elements
+  - References (citations, case law, laws)
+  - Keywords and summaries
+- **Guaranteed Valid JSON Output**: Uses OpenAI's JSON mode for reliable structured data
+- **Google Colab Integration**: Seamless file upload and download functionality
+- **Detailed Documentation**: Extensively commented code for learning and customization
+- **Cost Control**: Configurable text truncation to manage API costs
+- **Deterministic Output**: Uses temperature=0 for consistent results
 
 ## Requirements
 
 ### Dependencies
 
 - Python 3.7+
+- openai
 - PyPDF2
-- transformers
-- torch
 - google.colab (for Colab environment)
+
+### API Requirements
+
+- **OpenAI API Key**: Required to use GPT-4o-mini model
+- **API Credits**: Pay-per-use pricing based on tokens processed
 
 ### Hardware Requirements
 
-- **RAM**: Minimum 8GB (16GB+ recommended for t5-large model)
-- **GPU**: Optional but highly recommended for faster processing
-- **Storage**: ~3GB for model weights
+- **RAM**: 4GB+ (no local model loading required)
+- **GPU**: Not required (cloud-based API)
+- **Internet**: Required for API calls
 
 ## Installation
 
 ### For Google Colab
 
-The notebook includes all necessary installation commands. Simply run the first cell:
+The notebook includes all necessary installation commands:
 
 ```python
 !pip install PyPDF2 transformers torch
+!pip install openai
 ```
 
 ### For Local Environment
 
 ```bash
-pip install PyPDF2 transformers torch
+pip install PyPDF2 openai
 ```
 
 ## Usage
 
 ### In Google Colab
 
-1. Open the `metadata_extraction.ipynb` notebook in Google Colab
-2. Run the first cell to install dependencies
-3. Run the second cell to load the T5 model and tokenizer
-4. Run the third cell to define extraction functions
-5. Run the fourth cell and upload your PDF document when prompted
-6. The extracted metadata will be displayed and automatically downloaded as `extracted_metadata.txt`
+1. Open the `metadata_extraction .ipynb` notebook in Google Colab
+2. Run Cell 1 to install PyPDF2, transformers, and torch
+3. Run Cell 2 to install OpenAI library
+4. Run Cell 4 to import libraries and enter your OpenAI API key when prompted
+5. Run Cell 6 to define the `read_pdf()` function
+6. Run Cell 8 to define the `create_prompt()` function
+7. Run Cell 10 to execute the main extraction process:
+   - Upload your PDF file when prompted
+   - The tool will automatically extract text and metadata
+   - Results will be displayed in console
+   - Metadata will be saved and downloaded as `extracted_metadata.json`
 
 ### Step-by-Step Process
 
-**Step 1: Install Libraries**
+**Step 1: Install Required Libraries**
+
 ```python
 !pip install PyPDF2 transformers torch
+!pip install openai
 ```
 
-**Step 2: Import and Setup Model**
-```python
-from transformers import T5ForConditionalGeneration, T5Tokenizer
+**Step 2: Setup OpenAI Client**
 
-model_name = "t5-large"
-tokenizer = T5Tokenizer.from_pretrained(model_name)
-model = T5ForConditionalGeneration.from_pretrained(model_name)
+```python
+from openai import OpenAI
+from getpass import getpass
+
+api_key = getpass("Enter your OpenAI API Key: ")
+client = OpenAI(api_key=api_key)
+MODEL_NAME = "gpt-4o-mini"
 ```
 
 **Step 3: Upload and Process PDF**
-- Upload your PDF file when prompted
-- The tool will automatically extract text and metadata
-- Results will be displayed and saved to a downloadable file
+
+The notebook will prompt you to upload a PDF file, then automatically:
+- Extract text using PyPDF2
+- Send it to GPT-4o-mini with structured prompts
+- Parse and format the JSON response
+- Display results and download the metadata file
 
 ## Model Configuration
 
-The project uses the T5-large model with the following parameters:
+The project uses OpenAI's **GPT-4o-mini** model with the following parameters:
 
-- **Input Length**: 512 tokens (with truncation)
-- **Output Length**: 50-500 tokens
-- **Beam Search**: 4 beams
-- **Length Penalty**: 2.0 (encourages comprehensive outputs)
-- **Early Stopping**: Enabled
+- **Model**: `gpt-4o-mini` (cost-effective, high-quality)
+- **Temperature**: `0` (deterministic, consistent outputs)
+- **Max Tokens**: `1500` (sufficient for detailed metadata)
+- **Response Format**: `json_object` (guaranteed valid JSON)
+- **Character Limit**: `15,000 characters` (configurable for cost control)
 
 ### Alternative Models
 
-You can use smaller models for faster processing with slightly reduced quality:
+You can switch to other OpenAI models by changing the `MODEL_NAME` variable:
 
-- `t5-small`: Faster, requires less memory (~250MB)
-- `t5-base`: Balanced performance (~900MB)
-- `t5-large`: Best quality (~3GB) - **Default**
+- `gpt-4o-mini`: Fast, cost-effective, excellent quality - **Default**
+- `gpt-4o`: Higher accuracy, more expensive
+- `gpt-3.5-turbo`: Lower cost, good for simple documents
 
-To change the model, simply modify:
 ```python
-model_name = "t5-base"
+MODEL_NAME = "gpt-4o"
 ```
 
 ## Technical Details
 
 ### PDF Reading
 
-Uses PyPDF2 library to extract text from PDF files. Note that PyPDF2 may have limitations with:
-- Complex layouts (tables, multi-column text)
-- Scanned documents (OCR not included)
-- Password-protected PDFs
+Uses PyPDF2 library to extract text from PDF files page by page. Limitations include:
+- Complex layouts (tables, multi-column text) may not parse perfectly
+- Scanned documents without text layer require OCR preprocessing
+- Password-protected PDFs are not supported
 
 ### Prompt Engineering
 
-The tool uses carefully crafted prompts to guide the T5 model in extracting structured metadata. The prompt instructs the model to:
-- Identify document type
-- Extract entities and dates
-- Identify document structure
-- Find references
-- Generate summaries
-- Output in JSON format
+The tool uses advanced prompt engineering with:
 
-### Output Format
+1. **Clear Role Definition**: System message establishes the AI as a metadata extraction expert
+2. **Structured Instructions**: Detailed explanation of what metadata means
+3. **Categorized Guidelines**: Who, What, When, Where, Structure, References framework
+4. **Concrete Examples**: Full example with research paper input and expected JSON output
+5. **Critical Instructions**: Explicit JSON-only output requirement
+6. **Context Window**: Up to 15,000 characters of document content
 
-The extracted metadata is returned as a JSON-formatted string containing fields relevant to the document type.
+### JSON Output Guarantee
+
+The implementation uses multiple layers to ensure valid JSON:
+
+1. **OpenAI JSON Mode**: `response_format={"type": "json_object"}`
+2. **System Message**: Explicit instruction to return JSON only
+3. **User Prompt**: Critical instruction emphasizing JSON-only output
+4. **Python Parsing**: `json.loads()` and `json.dumps()` with error handling
+5. **Fallback**: Returns raw response if JSON parsing fails for debugging
+
+### Error Handling
+
+Comprehensive error handling includes:
+- Try-except blocks for API calls
+- JSON parsing error catching
+- Safe navigation with optional chaining concepts
+- Detailed error messages with exception details
+- Graceful degradation with error JSON output
+
+## Cost Estimation
+
+OpenAI GPT-4o-mini pricing (as of 2024):
+- **Input**: ~$0.15 per 1M tokens
+- **Output**: ~$0.60 per 1M tokens
+
+For a typical research paper (15,000 characters ≈ 3,750 tokens input + 500 tokens output):
+- **Cost per document**: ~$0.001 (approximately $1 per 1000 documents)
+
+Use the `max_chars` parameter to control costs for very large documents.
 
 ## Limitations
 
-1. **Token Limits**: Input is truncated to 512 tokens due to T5 model constraints
-2. **PDF Complexity**: Complex PDF layouts may not be accurately parsed
-3. **Processing Time**: Large documents with t5-large model may take several minutes
-4. **Memory Requirements**: T5-large requires significant RAM/VRAM
-5. **No OCR**: Scanned PDFs without text layer cannot be processed
+1. **API Dependency**: Requires internet connection and active OpenAI API key
+2. **Character Limits**: Input truncated to 15,000 characters by default (configurable)
+3. **PDF Complexity**: Complex layouts may not be accurately parsed by PyPDF2
+4. **No OCR**: Scanned PDFs without text layer cannot be processed
+5. **API Costs**: Usage incurs charges based on OpenAI pricing
+6. **Rate Limits**: Subject to OpenAI API rate limits based on your account tier
 
-## Known Issues
+## Output Example
 
-- **EOF Marker Error**: Some PDF files may cause `PdfReadError: EOF marker not found`. This occurs with corrupted or improperly formatted PDFs. Try re-saving the PDF or using a different source.
+Sample output for a conference paper:
+
+```json
+{
+  "document_type": "Conference Paper",
+  "title": "Contour-based Repositioning of lower limbs of the GHBMC Human Body FE Model",
+  "authors": [
+    "Aditya Chhabra",
+    "Sachiv Paruchuri",
+    "Dhruv Kaushik",
+    "Kshitij Mishra",
+    "Anoop Chawla",
+    "Sudipto Mukherjee",
+    "Rajesh Malhotra"
+  ],
+  "conference_name": "IRCOBI Conference 2017",
+  "reference_number": "IRC-17-67",
+  "funding": "European Union Seventh Framework Programme grant agreement n°605544 (PIPER project)",
+  "keywords": [
+    "Contour-based Repositioning",
+    "Human Body Model",
+    "Injury Prediction",
+    "Posture-specific Models"
+  ],
+  "summary": "Presents a contour-based repositioning technique for lower limbs of the GHBMC Human Body Model, improving posture-specific human body models for injury prediction"
+}
+```
 
 ## Future Enhancements
 
@@ -149,9 +224,18 @@ The extracted metadata is returned as a JSON-formatted string containing fields 
 - [ ] Batch processing for multiple documents
 - [ ] Custom metadata field selection
 - [ ] Support for other document formats (DOCX, TXT, HTML)
-- [ ] Fine-tuned model for specific document types
 - [ ] Web interface for easier access
-- [ ] API endpoint for integration
+- [ ] Async processing for large batches
+- [ ] Support for other LLM providers (Anthropic, Azure OpenAI)
+- [ ] Token usage tracking and cost reporting
+- [ ] Metadata validation and quality scoring
+
+## Security Notes
+
+- API keys are entered securely using `getpass()` (hidden input)
+- Never commit API keys to version control
+- Consider using environment variables for production
+- Review OpenAI's data usage policies for sensitive documents
 
 ## Contributing
 
@@ -163,15 +247,11 @@ This project is open-source and available for educational and research purposes.
 
 ## Acknowledgments
 
-- Google's T5 model from Hugging Face Transformers
+- OpenAI for the GPT-4o-mini API
 - PyPDF2 library for PDF processing
-- Google Colab for providing free GPU resources
-
-## Contact
-
-For questions, issues, or suggestions, please open an issue in the repository.
+- Google Colab for providing free computing resources
 
 ---
 
-**Note**: This tool is designed for educational and research purposes. Always verify extracted metadata for critical applications.
+**Note**: This tool is designed for educational and research purposes. Always verify extracted metadata for critical applications. Ensure compliance with OpenAI's usage policies and your organization's data handling requirements.
 
